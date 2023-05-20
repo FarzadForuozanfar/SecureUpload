@@ -231,8 +231,6 @@ interface FileSize{
  */
 function CheckUploadedFile($path, $name, $allowed_extensions, $max_filenameSize, $max_size, $Antivirus = false, $enable_logging = false)
 {
-    $error = [];
-
     try 
     {
         $start_time = microtime(true);
@@ -248,8 +246,6 @@ function CheckUploadedFile($path, $name, $allowed_extensions, $max_filenameSize,
 
         if (preg_match('/[\x00-\x1f\/:*?"<>|]/', $name))
         {
-            preg_match_all('/[\x00-\x1f\/:*?"<>|]/', $name, $match);
-            var_dump($match);
             throw new Exception("InvalidCharInFileName");
         }
 
@@ -259,19 +255,12 @@ function CheckUploadedFile($path, $name, $allowed_extensions, $max_filenameSize,
 
         if ((filesize($path) / 1000) > $max_size) 
         {
-            var_dump(filesize($path) / 1000, $max_size);
-            $error['file_size_exceeded'] = true;
-            return $error;
+            throw new Exception('FileSizeExceeded');
         }
         if (!in_array($file_extension, $allowed_extensions, true)) 
         {
-            $error['invalid_file_extension'] = ['mime' => $file_mime_type, 'extension' => $file_extension];
-            return $error;
+            throw new Exception('InvalidFileExtension');
         }
-
-        echo "<pre>";
-        var_dump($file_mime_type);
-        echo "</pre>";
         
         if (!($file_mime_type == 'application/octet-stream' && $file_extension == 'xlsx'))
         {
@@ -279,16 +268,14 @@ function CheckUploadedFile($path, $name, $allowed_extensions, $max_filenameSize,
             
             if ($file_mime_type !== $file->checkExtensionWithMime($file_extension)) 
             {
-                $error['invalid_file_type'] = ['mime' => $file_mime_type, 'extension' => $file_extension];
-                return $error;
+                throw new Exception('InvalidFileType');
             }
         }
         $pattern = '/\b(?:SELECT|INSERT|UPDATE|DELETE|CREATE|ALTER|DROP|TRUNCATE|GRANT|REVOKE)\b|<script[^>]*>(.*?)<\/script>|<\?php(.*?)\?>/is';
 
         if (preg_match($pattern, file_get_contents($path)))
         {
-            $error['invalid_contents'] = true;
-            return $error;
+            throw new Exception('InvalidContents');
         }
         if ($Antivirus)
         {
@@ -325,8 +312,7 @@ function CheckUploadedFile($path, $name, $allowed_extensions, $max_filenameSize,
                     {
                         // logging
                     }
-                    $error['infected_file'] = $output;
-                    return $error;
+                    throw new Exception('InfectedFile');
                 } 
             } 
             
@@ -340,7 +326,6 @@ function CheckUploadedFile($path, $name, $allowed_extensions, $max_filenameSize,
     catch (Exception $e) 
     {
         $error['exception'] = $e->getMessage();
-        return $error;
     }
 
     $end_time = microtime(true);
