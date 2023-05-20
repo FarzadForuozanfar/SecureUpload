@@ -219,6 +219,15 @@ interface FileSize{
     const TEN_MG    = 10240;
 }
 
+function ReadEnv()
+{
+    $env = parse_ini_file(__DIR__ . '/.env');
+
+    foreach ($env as $key => $value) {
+        putenv("$key=$value");
+    }
+}
+
 /**
  * @param string $path
  * @param string $name
@@ -231,6 +240,9 @@ interface FileSize{
  */
 function CheckUploadedFile($path, $name, $allowed_extensions, $max_filenameSize, $max_size, $Antivirus = false, $enable_logging = false)
 {
+    ReadEnv();
+    require_once "lang/lang-" . getenv('LANG') . ".php";
+
     try 
     {
         $start_time = microtime(true);
@@ -241,7 +253,8 @@ function CheckUploadedFile($path, $name, $allowed_extensions, $max_filenameSize,
 
         if (strlen($name) > $max_filenameSize)
         {
-            throw new Exception(sprintf('InvalidFileNameSize', $max_filenameSize));
+            $lang['InvalidFileNameSize'] = sprintf($lang['InvalidFileNameSize'], $max_filenameSize); 
+            throw new Exception('InvalidFileNameSize');
         }
 
         if (preg_match('/[\x00-\x1f\/:*?"<>|]/', $name))
@@ -255,10 +268,12 @@ function CheckUploadedFile($path, $name, $allowed_extensions, $max_filenameSize,
 
         if ((filesize($path) / 1000) > $max_size) 
         {
+            $lang['FileSizeExceeded'] = sprintf($lang['FileSizeExceeded'], $max_size); 
             throw new Exception('FileSizeExceeded');
         }
         if (!in_array($file_extension, $allowed_extensions, true)) 
         {
+            $lang['InvalidFileExtension'] = str_replace('#', implode(', ', $allowed_extensions), $lang['InvalidFileExtension']);
             throw new Exception('InvalidFileExtension');
         }
         
@@ -282,7 +297,7 @@ function CheckUploadedFile($path, $name, $allowed_extensions, $max_filenameSize,
             $clamav_path = "E:\\Program Files\\ClamAV\\clamscan.exe";
             if (!file_exists($clamav_path)) 
             {
-                throw new Exception("ClamAV executable file not found");
+                throw new Exception("AntivirusFileNotFound");
             }
 
             $file_path_escaped = escapeshellarg($path);
@@ -316,16 +331,16 @@ function CheckUploadedFile($path, $name, $allowed_extensions, $max_filenameSize,
                 } 
             } 
             
-            else 
+            else  
             {
-                throw new Exception("ClamAV error: " . implode("\n", $output));
+                throw new Exception("ClamAVError" . implode("\n", $output));
             }
         }
     } 
 
     catch (Exception $e) 
     {
-        $error['exception'] = $e->getMessage();
+        $error = $lang[$e->getMessage()];
     }
 
     $end_time = microtime(true);
@@ -351,7 +366,7 @@ if (!empty($_FILES['uploaded_file']))
     foreach ($files as $file)
     {
         
-        $result = CheckUploadedFile($file['tmp_name'], $file['name'], $allowed_extensions, $allowed_mime_types, FileSize::TEN_MG, true, true);
+        $result = CheckUploadedFile($file['tmp_name'], $file['name'], $allowed_extensions, 50, FileSize::THREE_MG, true, true);
         if (!isset($result['time']))
         {
             var_dump($result);
