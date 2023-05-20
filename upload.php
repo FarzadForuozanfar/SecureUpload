@@ -236,7 +236,7 @@ function CheckUploadedFile($path, $name, $allowed_extensions, $max_filenameSize,
         $start_time = microtime(true);
         if (!file_exists($path)) 
         {
-            throw new Exception("File not found");
+            throw new Exception("FileNotFound");
         }
 
         if (strlen($name) > $max_filenameSize)
