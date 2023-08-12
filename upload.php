@@ -283,6 +283,7 @@ function CheckUploadedFile($path, $name, $allowed_extensions, $max_filenameSize,
             
             if ($file_mime_type !== $file->checkExtensionWithMime($file_extension)) 
             {
+                var_dump($file_extension, $file_mime_type, $file->checkExtensionWithMime($file_extension));
                 throw new Exception('InvalidFileType');
             }
         }
@@ -351,7 +352,7 @@ function CheckUploadedFile($path, $name, $allowed_extensions, $max_filenameSize,
 if (!empty($_FILES['uploaded_file'])) 
 {
     echo "<hr> Begin <hr>";
-    $allowed_extensions = array_merge(ImageTypes::getAllExtensions(), TxtDocTypes::getAllExtensions(), CompressedTypes::getAllExtensions());
+    $allowed_extensions = array_merge(ImageTypes::getAllExtensions());
     $allowed_mime_types = array_merge(ImageTypes::getAllMimes(), TxtDocTypes::getAllMimes(), CompressedTypes::getAllMimes());
     var_dump($_FILES['uploaded_file']);
 
@@ -366,11 +367,15 @@ if (!empty($_FILES['uploaded_file']))
     foreach ($files as $file)
     {
         
-        $result = CheckUploadedFile($file['tmp_name'], $file['name'], $allowed_extensions, 50, FileSize::THREE_MG, true, true);
+        $result = CheckUploadedFile($file['tmp_name'], $file['name'], $allowed_extensions, 50, FileSize::TEN_MG, true, true);
         if (!isset($result['time']))
         {
             var_dump($result);
             die();
+        }
+        else
+        {
+            var_dump($result);
         }
     }
 }
