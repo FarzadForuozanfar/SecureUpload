@@ -72,5 +72,48 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use SecureUpload\FileTypes\ImageTypes; 
 use SecureUpload\Interfaces\FileSize; 
 use SecureUpload\Uploader\SecureUploader; 
-if (!empty($_FILES['uploaded_file'])) { // Define the allowed extensions and file size limits $allowedExtensions = ImageTypes::getAllExtensions(); // Get all allowed extensions for images $maxFileNameLength = 50; // Maximum file name length $maxFileSize = FileSize::TEN_MG; // Max file size (10MB) $antivirusEnabled = true; // Enable antivirus check $enableLogging = true; // Enable logging of the upload process // Instantiate the SecureUploader with the configuration $uploader = new SecureUploader(__DIR__ . '/../.env', $allowedExtensions, $maxFileNameLength, $maxFileSize, $antivirusEnabled, $enableLogging); // Reorganize the files array for processing $files = []; foreach ($_FILES['uploaded_file'] as $key => $items) { foreach ($items as $index => $item) { $files[$index][$key] = $item; } } // Validate each uploaded file foreach ($files as $file) { $result = $uploader->validate($file['tmp_name'], $file['name']); if (isset($result['error'])) { // Print the error message if validation fails echo "Error: " . $result['error']; die(); } else { // Print the success message if validation passes echo "File uploaded successfully: " . $file['name']; } } } else { echo "No file uploaded."; } ?>
+
+if (!empty($_FILES['uploaded_file'])) 
+{
+    // Define the allowed extensions and file size limits
+    $allowedExtensions = ImageTypes::getAllExtensions(); // Get all allowed extensions for images
+    $maxFileNameLength = 50; // Maximum file name length
+    $maxFileSize = FileSize::TEN_MG; // Max file size (10MB)
+    
+    // Instantiate the SecureUploader with the configuration
+    $uploader = new SecureUploader($allowedExtensions, $maxFileNameLength, $maxFileSize); 
+    // Reorganize the files array for processing
+    $files = []; 
+    foreach ($_FILES['uploaded_file'] as $key => $items) 
+    { 
+        foreach ($items as $index => $item) 
+        {
+            $files[$index][$key] = $item; 
+        } 
+    }
+     
+    // Validate each uploaded file
+    foreach ($files as $file) 
+    { 
+        $result = $uploader->validate($file['tmp_name'], $file['name']); 
+        if (isset($result['error'])) 
+        { // Print the error message if validation fails
+            echo "Error: " . $result['error']; die(); 
+        } 
+        else 
+        { // Print the success message if validation passes
+            echo "File uploaded successfully: " . $file['name']; 
+        } 
+    } 
+
+else 
+{
+    echo "No file uploaded.";
+} 
+?>
 ```
+## Contributing
+Contributions are welcome! If you encounter a bug or have a feature request, please open an issue on the [GitHub repository](https://github.com/FarzadForuozanfar/SecureUpload/issues). To contribute code, fork the repository and submit a pull request.
+
+## License
+SecureUpload is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
