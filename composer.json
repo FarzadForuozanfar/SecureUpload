@@ -3,6 +3,23 @@
     "description": "A secure file upload package with validation and antivirus integration.",
     "type": "library",
     "license": "MIT",
+    "homepage": "https://github.com/FarzadForuozanfar/SecureUpload",
+    "keywords": [
+        "file-upload",
+        "security",
+        "antivirus",
+        "validation",
+        "upload",
+        "php"
+    ],
+    "authors": [
+        {
+            "name": "Farzad Forouzanfar",
+            "email": "foruozanfar2000f@gmail.com",
+            "homepage": "https://www.linkedin.com/in/farzad-forouzanfar-a1773b225",
+            "role": "Developer"
+        }
+    ],
     "autoload": {
         "psr-4": {
             "SecureUpload\\": "src/"
@@ -10,5 +27,8 @@
     },
     "require": {
         "php": ">=7.4"
+    },
+    "support": {
+        "issues": "https://github.com/FarzadForuozanfar/SecureUpload/issues"
     }
 }
