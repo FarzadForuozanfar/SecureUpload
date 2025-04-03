@@ -1,0 +1,14 @@
+{
+    "name": "farzad/secure-upload",
+    "description": "A secure file upload package with validation and antivirus integration.",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "SecureUpload\\": "src/"
+        }
+    },
+    "require": {
+        "php": ">=7.4"
+    }
+}
