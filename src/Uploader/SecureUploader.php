@@ -20,27 +20,23 @@ class SecureUploader
     public function __construct(
         array $allowedExtensions,
         int $maxFileNameLength,
-        int $maxFileSize,
-        bool $antivirusEnabled = false,
-        bool $enableLogging = false
+        int $maxFileSize
     ) {
+        EnvLoader::load();
+        $langFile = __DIR__ . '/lang/lang-' . getenv('LANG') . '.php';
+
         $this->allowedExtensions = $allowedExtensions;
         $this->maxFileNameLength = $maxFileNameLength;
         $this->maxFileSize = $maxFileSize;
-        $this->antivirusEnabled = $antivirusEnabled;
-        $this->enableLogging = $enableLogging;
+        $this->antivirusEnabled = (bool)getenv('ENABLE_ANTIVIRUS');
+        $this->enableLogging = (bool)getenv('ENABLE_LOGGING');
         $this->fileTypes = new AllFileTypes();
-        
-        EnvLoader::load();
-        $langFile = __DIR__ . '/lang/lang-' . getenv('LANG') . '.php';
+
         if (file_exists($langFile)) {
             $this->lang = include $langFile;
         } else {
             $this->lang = [];
         }
-        echo "<pre style='direction:ltr; text-align:left;'>";
-        var_dump(getenv());
-        die('</pre>');
     }
 
     /**
