@@ -4,9 +4,9 @@ namespace SecureUpload\Env;
 
 class EnvLoader
 {
-    public static function load(): void
+    public static function load(string $envPath = ''): void
     {
-        $envPath = __DIR__ . '/../../.env'; 
+        $envPath = empty($envPath) ? __DIR__ . '/../../.env' : $envPath; 
         if (file_exists( $envPath )) {
             $env = parse_ini_file($envPath);
             foreach ($env as $key => $value) {
