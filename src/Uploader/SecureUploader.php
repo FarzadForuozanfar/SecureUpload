@@ -23,7 +23,7 @@ class SecureUploader
         int $maxFileSize
     ) {
         EnvLoader::load();
-        $langFile = __DIR__ . '/lang/lang-' . getenv('LANG') . '.php';
+        $langFile = __DIR__ . '/../../lang/lang-' . getenv('LANG') . '.php';
 
         $this->allowedExtensions = $allowedExtensions;
         $this->maxFileNameLength = $maxFileNameLength;

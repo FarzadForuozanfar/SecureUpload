@@ -7,7 +7,7 @@ namespace SecureUpload\FileTypes;
 class ImageTypes
 {
     private const TYPES = [
-        ['mime' => 'image/jpeg', 'ext' => 'jpeg'],
+        ['mime' => 'image/jpeg', 'ext' => 'jpg'],
         ['mime' => 'image/jpg',  'ext' => 'jpg'],
         ['mime' => 'image/png',  'ext' => 'png'],
         ['mime' => 'image/gif',  'ext' => 'gif'],
