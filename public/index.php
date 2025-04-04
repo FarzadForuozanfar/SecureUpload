@@ -10,10 +10,8 @@ if (!empty($_FILES['uploaded_file'])) {
     $allowedExtensions = ImageTypes::getAllExtensions();
     $maxFileNameLength = 50;
     $maxFileSize = FileSize::TEN_MG;
-    $antivirusEnabled = true;
-    $enableLogging = true;
 
-    $uploader = new SecureUploader( $allowedExtensions, $maxFileNameLength, $maxFileSize, $antivirusEnabled, $enableLogging);
+    $uploader = new SecureUploader($allowedExtensions, $maxFileNameLength, $maxFileSize);
 
     $files = [];
     foreach ($_FILES['uploaded_file'] as $key => $items) {
