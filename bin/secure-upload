@@ -1,0 +1,12 @@
+#!/usr/bin/env php
+<?php
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use SecureUpload\Cli\CommandHandler;
+
+$argv = $_SERVER['argv'];
+$command = $argv[1] ?? 'help';
+
+$handler = new CommandHandler();
+$handler->handle($command, array_slice($argv, 2));
