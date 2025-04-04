@@ -5,16 +5,14 @@ namespace SecureUpload\Uploader;
 use Exception;
 use SecureUpload\Env\EnvLoader;
 use SecureUpload\FileTypes\AllFileTypes;
+use SecureUpload\Config\Config;
 
 class SecureUploader
 {
-    private array $allowedExtensions;
-    private int $maxFileNameLength;
-    private int $maxFileSize; // in KB
-    private bool $antivirusEnabled;
-    private bool $enableLogging;
     private AllFileTypes $fileTypes;
     private array $lang;
+
+    private Config $config;
 
     /**
      * SecureUploader constructor.
@@ -23,21 +21,21 @@ class SecureUploader
      * @param int $maxFileNameLength Maximum allowed file name length.
      * @param int $maxFileSize Maximum file size in KB.
      */
-    public function __construct(
-        array $allowedExtensions,
-        int $maxFileNameLength,
-        int $maxFileSize
-    ) {
+    public function __construct(array $allowedExtensions = []) {
         // Load environment variables
-        EnvLoader::load();
-        $langFile = __DIR__ . '/../../lang/lang-' . getenv('LANG') . '.php';
+        $envPath = file_exists(getcwd() . '/.env') 
+                    ? getcwd() . '/.env' 
+                    : __DIR__ . '/../../.env';
 
-        $this->allowedExtensions = $allowedExtensions;
-        $this->maxFileNameLength = $maxFileNameLength;
-        $this->maxFileSize = $maxFileSize;
-        $this->antivirusEnabled = (bool)getenv('ENABLE_ANTIVIRUS');
-        $this->enableLogging = (bool)getenv('ENABLE_LOGGING');
+        EnvLoader::load($envPath);
+
+        $this->config = new Config();
+
+        $langFile = __DIR__ . '/../../lang/lang-' . $this->config->language . '.php';
+
         $this->fileTypes = new AllFileTypes();
+        $this->config->allowedExtensions = empty($allowedExtensions) ? $this->fileTypes->getAllExtensions() : $allowedExtensions;
+
         $this->lang = file_exists($langFile) ? include $langFile : [];
     }
 
@@ -56,8 +54,8 @@ class SecureUploader
                 throw new Exception("FileNotFound");
             }
 
-            if (strlen($fileName) > $this->maxFileNameLength) {
-                $this->lang['InvalidFileNameSize'] = sprintf($this->lang['InvalidFileNameSize'], $this->maxFileNameLength);
+            if (strlen($fileName) > $this->config->maxFileNameLength) {
+                $this->lang['InvalidFileNameSize'] = sprintf($this->lang['InvalidFileNameSize'], $this->config->maxFileNameLength);
                 throw new Exception('InvalidFileNameSize');
             }
 
@@ -71,13 +69,13 @@ class SecureUploader
             $fileMimeType = $finfo->file($filePath);
 
             // Check file size in KB (using 1024 for conversion)
-            if ((filesize($filePath) / 1024) > $this->maxFileSize) {
-                $this->lang['FileSizeExceeded'] = sprintf($this->lang['FileSizeExceeded'], $this->maxFileSize);
+            if ((filesize($filePath) / 1024) > $this->config->maxFileSize) {
+                $this->lang['FileSizeExceeded'] = sprintf($this->lang['FileSizeExceeded'], $this->config->maxFileSize);
                 throw new Exception('FileSizeExceeded');
             }
 
-            if (!in_array($fileExtension, $this->allowedExtensions, true)) {
-                $this->lang['InvalidFileExtension'] = str_replace('#', implode(', ', $this->allowedExtensions), $this->lang['InvalidFileExtension']);
+            if (!in_array($fileExtension, $this->config->allowedExtensions, true)) {
+                $this->lang['InvalidFileExtension'] = str_replace('#', implode(', ', $this->config->allowedExtensions), $this->lang['InvalidFileExtension']);
                 throw new Exception('InvalidFileExtension');
             }
 
@@ -93,7 +91,7 @@ class SecureUploader
                 throw new Exception('InvalidContents');
             }
 
-            if ($this->antivirusEnabled) {
+            if ($this->config->enableAntivirus) {
                 $this->runAntivirusCheck($filePath);
             }
 
@@ -112,13 +110,13 @@ class SecureUploader
      */
     private function runAntivirusCheck(string $filePath): void
     {
-        $clamavPath = getenv('ANTIVIRUS_PATH');
+        $clamavPath = $this->config->antivirusPath;
         if (!file_exists($clamavPath)) {
             throw new Exception("AntivirusFileNotFound");
         }
 
         $escapedFilePath = escapeshellarg($filePath);
-        $pythonPath = getenv('PYTHON_EXE_PATH');
+        $pythonPath = $this->config->pythonPath;
         $pythonScript = __DIR__ . '../Scripts/python/scan_file.py';
 
         $command = sprintf('%s %s %s %s', $pythonPath, $pythonScript, $escapedFilePath, escapeshellarg($clamavPath));
@@ -147,6 +145,6 @@ class SecureUploader
 
     public function getLang(): string
     {
-        return getenv('LANG');
+        return $this->config->language;
     }
 }
