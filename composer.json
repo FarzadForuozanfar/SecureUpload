@@ -1,5 +1,5 @@
 {
-    "name": "farzad/secure-upload",
+    "name": "farzad-forouzanfar/secure-upload",
     "description": "A secure file upload package with validation and antivirus integration.",
     "type": "library",
     "license": "MIT",
