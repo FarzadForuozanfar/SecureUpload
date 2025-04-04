@@ -6,22 +6,29 @@ use Exception;
 use SecureUpload\Env\EnvLoader;
 use SecureUpload\FileTypes\AllFileTypes;
 
-
 class SecureUploader
 {
     private array $allowedExtensions;
     private int $maxFileNameLength;
-    private int $maxFileSize;
+    private int $maxFileSize; // in KB
     private bool $antivirusEnabled;
     private bool $enableLogging;
     private AllFileTypes $fileTypes;
     private array $lang;
 
+    /**
+     * SecureUploader constructor.
+     *
+     * @param array $allowedExtensions Allowed file extensions.
+     * @param int $maxFileNameLength Maximum allowed file name length.
+     * @param int $maxFileSize Maximum file size in KB.
+     */
     public function __construct(
         array $allowedExtensions,
         int $maxFileNameLength,
         int $maxFileSize
     ) {
+        // Load environment variables
         EnvLoader::load();
         $langFile = __DIR__ . '/../../lang/lang-' . getenv('LANG') . '.php';
 
@@ -31,20 +38,15 @@ class SecureUploader
         $this->antivirusEnabled = (bool)getenv('ENABLE_ANTIVIRUS');
         $this->enableLogging = (bool)getenv('ENABLE_LOGGING');
         $this->fileTypes = new AllFileTypes();
-
-        if (file_exists($langFile)) {
-            $this->lang = include $langFile;
-        } else {
-            $this->lang = [];
-        }
+        $this->lang = file_exists($langFile) ? include $langFile : [];
     }
 
     /**
-     * Validate the uploaded file
+     * Validate the uploaded file.
      *
-     * @param string $filePath tmp file path
-     * @param string $fileName uploaded file name
-     * @return array validation result
+     * @param string $filePath Temporary file path.
+     * @param string $fileName Uploaded file name.
+     * @return array Validation result.
      */
     public function validate(string $filePath, string $fileName): array
     {
@@ -68,7 +70,8 @@ class SecureUploader
             $finfo = new \finfo(FILEINFO_MIME_TYPE);
             $fileMimeType = $finfo->file($filePath);
 
-            if ((filesize($filePath) / 1000) > $this->maxFileSize) {
+            // Check file size in KB (using 1024 for conversion)
+            if ((filesize($filePath) / 1024) > $this->maxFileSize) {
                 $this->lang['FileSizeExceeded'] = sprintf($this->lang['FileSizeExceeded'], $this->maxFileSize);
                 throw new Exception('FileSizeExceeded');
             }
@@ -78,6 +81,7 @@ class SecureUploader
                 throw new Exception('InvalidFileExtension');
             }
 
+            // Special handling for xlsx files
             if (!($fileMimeType === 'application/octet-stream' && $fileExtension === 'xlsx')) {
                 if ($fileMimeType !== $this->fileTypes->checkExtensionWithMime($fileExtension)) {
                     throw new Exception('InvalidFileType');
@@ -101,14 +105,14 @@ class SecureUploader
     }
 
     /**
-     * Run antivirus check using ClamAV
+     * Run antivirus check using ClamAV.
      *
      * @param string $filePath
-     * @throws Exception
+     * @throws Exception if antivirus check fails.
      */
     private function runAntivirusCheck(string $filePath): void
     {
-        $clamavPath = getenv('ANTIVIRUS_PATH');                                    
+        $clamavPath = getenv('ANTIVIRUS_PATH');
         if (!file_exists($clamavPath)) {
             throw new Exception("AntivirusFileNotFound");
         }
@@ -117,7 +121,7 @@ class SecureUploader
         $pythonPath = getenv('PYTHON_EXE_PATH');
         $pythonScript = getenv('PYTHON_SCRIPT');
 
-        $command = $pythonPath . " " . $pythonScript . " " . $escapedFilePath . ' ' . escapeshellarg($clamavPath);
+        $command = sprintf('%s %s %s %s', $pythonPath, $pythonScript, $escapedFilePath, escapeshellarg($clamavPath));
         exec($command, $output, $returnVal);
 
         $out = [];
@@ -140,5 +144,9 @@ class SecureUploader
             throw new Exception("ClamAVError: " . implode("\n", $output));
         }
     }
-}
 
+    public function getLang(): string
+    {
+        return getenv('LANG');
+    }
+}
