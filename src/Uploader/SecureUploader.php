@@ -119,7 +119,7 @@ class SecureUploader
 
         $escapedFilePath = escapeshellarg($filePath);
         $pythonPath = getenv('PYTHON_EXE_PATH');
-        $pythonScript = getenv('PYTHON_SCRIPT');
+        $pythonScript = __DIR__ . '../Scripts/python/scan_file.py';
 
         $command = sprintf('%s %s %s %s', $pythonPath, $pythonScript, $escapedFilePath, escapeshellarg($clamavPath));
         exec($command, $output, $returnVal);
