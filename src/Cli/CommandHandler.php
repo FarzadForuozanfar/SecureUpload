@@ -17,6 +17,10 @@ class CommandHandler
                 $this->testUpload($args);
                 break;
                 
+            case 'scan-file':
+                $this->scanFile($args);
+                break;
+
             default:
                 $this->showHelp();
                 break;
@@ -90,15 +94,6 @@ class CommandHandler
     }
 
 
-    private function showHelp(): void
-    {
-        echo "\nSecureUpload CLI\n";
-        echo "Usage:\n";
-        echo "  php bin/secure-upload publish-env              # Publish .env config file\n";
-        echo "  php bin/secure-upload test-upload --file=PATH  # Test file validation\n";
-        echo "  php binsecure-upload help                      # Show this message\n";
-    }
-
     /**
      * Get options from the command line or web request
      * 
@@ -106,47 +101,69 @@ class CommandHandler
      * @param array $longopts
      * @return array
      */
-    private function getoptreq ($options, $longopts)
+    private function scanFile(array $args): void
     {
-        if (PHP_SAPI === 'cli' || empty($_SERVER['REMOTE_ADDR']))
-        {
-            return getopt($options, $longopts);
-        }
-        else if (isset($_REQUEST))  // web script
-        {
-            $found = [];
+        echo "\033[1;34mScanning file...\033[0m\n";
 
-            $shortopts = preg_split('@([a-z0-9][:]{0,2})@i', $options, 0, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
-            $opts = array_merge($shortopts, $longopts);
-
-            foreach ($opts as $opt)
-            {
-                if (substr($opt, -2) === '::')  // optional
-                {
-                    $key = substr($opt, 0, -2);
-
-                    if (isset($_REQUEST[$key]) && !empty($_REQUEST[$key]))
-                    $found[$key] = $_REQUEST[$key];
-                    else if (isset($_REQUEST[$key]))
-                    $found[$key] = false;
-                }
-                else if (substr($opt, -1) === ':')  // required value
-                {
-                    $key = substr($opt, 0, -1);
-
-                    if (isset($_REQUEST[$key]) && !empty($_REQUEST[$key]))
-                    $found[$key] = $_REQUEST[$key];
-                }
-                else if (ctype_alnum($opt))  // no value
-                {
-                    if (isset($_REQUEST[$opt]))
-                    $found[$opt] = false;
-                }
+        foreach ($args as $arg) {
+            if (strpos($arg, '--file=') !== false) {
+                $filePath = substr($arg, strlen('--file='));
+                break;
             }
-
-            return $found;
+            else if (strpos($arg, '-f') !== false) {
+                $filePath = substr($arg, strlen('-f'));
+                break;
+            }
+            else {
+                echo "Invalid argument: $arg\n";
+            }
+        }
+        if (!isset($filePath)) {
+            echo "Usage: php bin/secure-upload scan-file --file=PATH_TO_FILE\n";
+            exit(1);
+        }
+        if (!file_exists($filePath)) {
+            echo "❌ File not found: $filePath\n";
+            exit(1);
         }
 
-        return [];
+        $config = new \SecureUpload\Config\Config();
+        $clamavPath = $config->getConfig('antivirusPath');
+        $pythonPath = $config->getConfig('pythonPath');
+        $pythonScript = __DIR__ . '/../Scripts/python/scan_file.py';
+        
+        $command = escapeshellcmd("$pythonPath $pythonScript " . escapeshellarg($filePath) . ' ' . escapeshellarg($clamavPath));
+        
+        exec($command, $output, $returnCode);
+        
+        $result = null;
+        foreach ($output as $line) {
+            $decoded = json_decode($line, true);
+            if (is_array($decoded)) {
+                $result = $decoded;
+                break;
+            }
+        }
+        
+        echo "🔍 Scan Result:\n";
+        if ($returnCode === 0 && isset($result['result'])) {
+            echo $result['result'] === "No threats found"
+                ? "✅ No threats found\n"
+                : "❌ Infected File: " . $result['result'] . "\n";
+        } else {
+            echo "⚠️ Scan failed or unexpected output:\n";
+            print_r($output);
+        }
+    }
+
+
+    private function showHelp(): void
+    {
+        echo "\nSecureUpload CLI\n";
+        echo "Usage:\n\n";
+        echo "  php bin/secure-upload publish-env              # Publish .env config file\n";
+        echo "  php bin/secure-upload test-upload --file=PATH  # Test file validation\n";
+        echo "  php bin/secure-upload scan-file --file=PATH    # Run ClamAV scan on file\n";
+        echo "  php binsecure-upload help                      # Show this message\n\n";
     }
 }
