@@ -134,3 +134,6 @@ Contributions are welcome! If you encounter a bug or have a feature request, ple
 
 ## License
 SecureUpload is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+![image_2025-04-06_14-34-264](https://github.com/user-attachments/assets/2562e0a2-4e72-4e80-a077-e6936bf285b4)
+
+![image_2025-04-06_14-34-26](https://github.com/user-attachments/assets/e57a43b3-cbac-48fe-9007-513887a8df8c)
