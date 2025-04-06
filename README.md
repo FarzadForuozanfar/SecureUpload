@@ -52,11 +52,6 @@ Alternatively, clone the repository:
    composer install
    ```
 
-4.  Copy and config environment variables:
-   ```bash
-   composer install
-   ```
-
 ## Configuration
 
 1.  **Environment Variables:**  
