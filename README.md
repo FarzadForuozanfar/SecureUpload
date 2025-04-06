@@ -52,6 +52,11 @@ Alternatively, clone the repository:
    composer install
    ```
 
+4.  Copy and config environment variables:
+   ```bash
+   composer install
+   ```
+
 ## Configuration
 
 1.  **Environment Variables:**  
@@ -112,6 +117,23 @@ else
 } 
 ?>
 ```
+
+## Usage via CLI
+This package also provides a CLI tool that you can use for quick testing and configuration.
+
+### 🔧 Publish `.env` file
+To publish the default `.env` configuration file into your project root:
+
+   ```bash
+   php vendor/bin/secure-upload publish-env
+   ```
+### 🧪 Test File Upload Validation
+You can quickly test the validation logic via CLI using a file path:
+
+   ```bash
+   php vendor/bin/secure-upload test-upload --file=path/to/your/file.jpg
+   ```
+
 ## Contributing
 Contributions are welcome! If you encounter a bug or have a feature request, please open an issue on the [GitHub repository](https://github.com/FarzadForuozanfar/SecureUpload/issues). To contribute code, fork the repository and submit a pull request.
 

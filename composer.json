@@ -31,5 +31,6 @@
     },
     "support": {
         "issues": "https://github.com/FarzadForuozanfar/SecureUpload/issues"
-    }
+    },
+    "bin": ["bin/secure-upload"]
 }
