@@ -1,7 +1,25 @@
 #!/usr/bin/env php
 <?php
 
-require_once __DIR__ . '/../vendor/autoload.php';
+$paths = [
+    __DIR__ . '/../../../autoload.php',
+    __DIR__ . '/../../../../autoload.php',
+    __DIR__ . '/vendor/autoload.php', 
+    __DIR__ . '/../vendor/autoload.php', 
+];
+
+foreach ($paths as $path) {
+    if (file_exists($path)) {
+        require_once $path;
+        break;
+    }
+}
+
+if (!class_exists(\SecureUpload\Cli\CommandHandler::class)) {
+    echo "❌ Could not find autoload. Please run 'composer install'.\n";
+    exit(1);
+}
+
 
 use SecureUpload\Cli\CommandHandler;
 
