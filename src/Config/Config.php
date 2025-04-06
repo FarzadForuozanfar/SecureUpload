@@ -28,4 +28,9 @@ class Config
         $this->language = explode(' ', $this->language)[0];
         $this->language = in_array($this->language, ['en', 'fa']) ? $this->language : 'en';
     }
+
+    public function getConfig($configName)
+    {
+        return $this->$configName ?? null;
+    }
 }
