@@ -30,7 +30,7 @@ SecureUpload is a secure file upload library for PHP that ensures files are safe
 SecureUpload is available via Composer. To install, run the following command in your project directory:
 
 ```bash
-composer require farzad/secure-upload
+composer require farzad-forouzanfar/secure-upload
 ```
 
 Alternatively, clone the repository:
