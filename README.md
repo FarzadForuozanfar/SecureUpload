@@ -1,4 +1,4 @@
-# SecureUpload
+# SecureUpload PHP
 
 SecureUpload is a secure file upload library for PHP that ensures files are safely uploaded to your server by performing a series of security validations. It includes checks for file existence, extension and MIME type validation, content scanning for malicious code, and optional antivirus scanning via ClamAV.
 
